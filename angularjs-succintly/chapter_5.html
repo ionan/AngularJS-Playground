@@ -1,0 +1,155 @@
+<html>
+	<head>
+		<script src="js/jquery.min.js"></script>
+		<script src="js/masonry.pkgd.min.js"></script>
+		<script src="js/imagesloaded.pkgd.min.js"></script>
+		<script src="js/angular.js"></script>
+		<script src="js/angular-locale_en-us.js"></script>
+		<script src="js/angular-resource.js"></script>
+		<script src="js/angular-route.js"></script>
+		<script src="js/jasmine-all-min.js"></script>
+		<script src="js/angular-mocks.js"></script>
+	</head>
+	<body ng-app="myApp">
+		<div ng-controller="PostsCtrl"> 
+			<ul ng-repeat="post in posts"> 
+				<li>{{post.title}}</li> 
+			</ul> 
+		</div>
+		<hr />
+		<div ng-controller="MyCtrl">
+			<input type="text" ng-model="searchTerm" placeholder="Search term">
+			<button ng-click="search()">Search</button>
+			<button ng-click="reset()">Reset</button>
+			<h1 ng-show="(searchResult.names.length)">Names</h1>
+			<ul ng-repeat="film in searchResult.names">
+				<li><a href="http://www.imdb.com/{{ film.url }}" target="_blank">{{film.name}}</a></li>
+			</ul>
+			<h1 ng-show="(searchResult.companies.length)">Companies</h1>
+			<ul ng-repeat="company in searchResult.companies">
+				<li><a href="http://www.imdb.com/{{ company.url }}" target="_blank">{{company.name}}</a></li>
+			</ul>
+		</div>
+		<hr />
+		<div class="masonry: 240;" ng-controller="MasonryCtrl">
+			<input type="text" ng-model="searchTermFlickr" placeholder="Search term">
+			<button ng-click="search()">Search photos</button>
+			<button ng-click="reset()">Reset</button>
+		    <div class="masonry-item" ng-repeat="item in photos.items">
+		        <img ng-src="{{ item.media.m }}" title="{{ item.title }} by {{ item.author }}" />
+		    </div>
+		</div>
+		<script>
+			var app = angular.module("myApp",['ngRoute','ngResource']);
+			app.controller("PostsCtrl", function($scope, $http) { 
+				$http.get('data/posts.json')
+					 .success(function(data, status, headers, config) { 
+						$scope.posts = data; 
+					 })
+					 .error(function(data, status, headers, config) { 
+						 $scope.posts = []; 
+					 }); 
+			});
+			app.factory("Post", function($resource) {
+				return $resource("/api/posts/:id");
+			});
+			app.controller("PostIndexCtrl", function($scope, Post) {
+				Post.query(function(data) {
+					$scope.posts = data;
+				});
+			});
+			app.controller("PostShowCtrl", function($scope, Post) {
+				Post.get({
+					id : 1
+				}, function(data) {
+					$scope.post = data;
+				});
+			});
+			
+			// IMDB tests
+			app.factory('imdbAPI', function($resource) {
+				return $resource(
+						'http://imdb.wemakesites.net/api/1.0/get/search/', {
+							format : 'json',
+							jsoncallback : 'JSON_CALLBACK'
+						}, {
+							get : {
+								method : 'JSONP',
+								isArray : false,
+								responseType : 'json',
+								params : {
+									callback : 'JSON_CALLBACK',
+									format : 'json',
+									method : 'get'
+								}
+							}
+						}, {
+							stripTrailingSlashes : false
+						});
+			});
+
+			app.controller("MyCtrl", function MyCtrl($scope, imdbAPI) {
+				$scope.search = function() {
+					imdbAPI.get({
+						q : $scope.searchTerm
+					}, function(data){
+						$scope.searchResult = data.data;
+					},function(err){
+						console.log(err);
+					});
+				};
+				$scope.reset = function(){
+					$scope.searchResult = {names: [], companies: []};
+					$scope.searchTerm = "";
+				};
+				$scope.reset();
+			});
+
+			// Flick test
+			app.factory('flickrPhotos', function($resource) {
+				return $resource(
+						'http://api.flickr.com/services/feeds/photos_public.gne',
+						{
+							format : 'json',
+							jsoncallback : 'JSON_CALLBACK'
+						}, {
+							'load' : {
+								'method' : 'JSONP'
+							}
+						});
+			});
+			app.directive('masonry', function($parse) {
+				return {
+					restrict : 'AC',
+					link : function(scope, elem, attrs) {
+						elem.masonry({
+							itemSelector : '.masonry-item',
+							columnWidth : $parse(attrs.masonry)(scope)
+						});
+					}
+				};
+			});
+			app.directive('masonryItem', function() {
+				return {
+					restrict : 'AC',
+					link : function(scope, elem, attrs) {
+						elem.imagesLoaded(function() {
+							elem.parents('.masonry').masonry('reload');
+						});
+					}
+				};
+			});
+			app.controller('MasonryCtrl', function($scope, flickrPhotos) {
+				$scope.search = function() {
+					$scope.photos = flickrPhotos.load({
+						tags : $scope.searchTermFlickr
+					});
+				};
+				$scope.reset = function(){
+					$scope.photos = [];
+					$scope.searchTermFlickr = "";
+				};
+			});
+		</script>
+	</body>
+</html>

@@ -1,0 +1,143 @@
+<html>
+	<head>
+		<script src="js/jquery.min.js"></script>
+		<script src="js/masonry.pkgd.min.js"></script>
+		<script src="js/imagesloaded.pkgd.min.js"></script>
+		<script src="js/angular.js"></script>
+		<script src="js/ui-utils.js"></script>
+		<script src="js/angular-locale_en-us.js"></script>
+		<script src="js/angular-resource.js"></script>
+		<script src="js/angular-route.js"></script>
+		<script src="js/jasmine-all-min.js"></script>
+		<script src="js/angular-mocks.js"></script>
+		<link rel="stylesheet" href="css/bootstrap.css">
+	</head>
+	<body ng-app="myApp">
+		<style type="text/css">
+			input.ng-invalid.ng-dirty {
+				background-color: red;
+				color: white;
+			}
+			
+			input.ng-valid.ng-dirty {
+				background-color: green;
+				color: white;
+			}
+		</style>
+		<div id="form1" ng-controller="User">
+			<form name="form" ng-submit="submit()" class="form-horizontal">
+				<label>Firstname</label> 
+				<input name="firstname" type="text" pattern="[A-Z]([a-z]*)" oninvalid="setCustomValidity('Plz enter on Alphabets ')" ng-model="user.firstname" required />
+				<p ng-show="form.firstname.$invalid && form.firstname.$dirty"> Firstname is required </p>
+				<br /> 
+				<label>Lastname</label> 
+				<input name="lastname" type="text" ng-model="user.lastname" required /> <br />
+				<label>Age</label> 
+				<input name="age" type="number" ng-model="user.age" required /> 
+				<label>Phone</label> 
+				<input name="age" type="phone" ng-model="user.phone" required /> 
+				<br>
+				<button class="btn">Submit</button>
+				<p>{{ wasSubmitted }}</p>
+				Firstname input valid: {{form.firstname.$valid}} <br> 
+				Firstname validation error: {{form.firstname.$error}} <br> 
+				Lastname input valid: {{form.lastname.$valid}} <br> 
+				Lastname validation error: {{form.lastname.$error}} <br> 
+				Age input valid: {{form.age.$valid}} <br> 
+				Age validation error: {{form.age.$error}} <br> 
+				Form valid: {{form.$valid}} <br> 
+				Form validation error: {{form.$error}}
+			</form>
+		</div>
+		<hr />
+		<div ng-controller="User2">
+			<form name="form2" ng-submit="submit()" novalidate>
+				<div class="control-group" ng-class="error('firstname')">
+					<label class="control-label" for="firstname">Firstname</label>
+					<div class="controls">
+						<input id="firstname" name="firstname" type="text"
+							ng-model="user.firstname" placeholder="Firstname" required /> <span
+							class="help-block"
+							ng-show="form2.firstname.$invalid && form2.firstname.$dirty">
+							First Name is required </span>
+					</div>
+				</div>
+				<div class="control-group" ng-class="error('lastname')">
+					<label class="control-label" for="lastname">Lastname</label>
+					<div class="controls">
+						<input id="lastname" name="lastname" type="text"
+							ng-model="user.lastname" placeholder="Lastname" required /> <span
+							class="help-block"
+							ng-show="form2.lastname.$invalid && form2.lastname.$dirty">
+							Last Name is required </span>
+					</div>
+				</div>
+				<div class="control-group">
+					<div class="controls">
+						<button ng-disabled="form2.$invalid" class="btn">Submit</button>
+					</div>
+				</div>
+				<p>{{ wasSubmitted }}</p>
+			</form>
+		</div>
+		<hr />
+		<div ng-controller="User3">
+			<form name="form" ng-submit="submit()" class="form-horizontal" novalidate>
+				<label>Firstname</label>
+				<input name="firstname" type="text" ng-model="user.firstname" required ui-validate=" { blacklisted: 'notBlackListed($value)' } "/>
+				<p ng-show="form.firstname.$invalid && form.firstname.$dirty">Firstname is required</p>
+				<p ng-show='form.firstname.$error.blacklisted'>This firstname is blacklisted.</p>
+				<br>
+				<label>Email</label>
+				<input name="email" type="text" ng-model="user.email" required ui-mask="*\+@*\+.A\+"/>
+				<p ng-show="form.firstname.$invalid && form.firstname.$dirty">Firstname is required</p>
+				<p ng-show='form.firstname.$error.blacklisted'>This firstname is blacklisted.</p>
+				<br>
+				<button ng-disabled="form.$invalid" class="btn">Submit</button>
+			</form>
+			User Model: {{user}}
+			<br>
+			Form was submitted: {{wasSubmitted}}
+			<br>
+			Firstname input valid: {{form.firstname.$valid}}
+			<br>
+			Firstname validation error: {{form.firstname.$error}}
+			<br>
+			Form valid: {{form.$valid}}
+			<br>
+			Form validation error: {{form.$error}}
+		</div>
+		<script>
+			var app = angular.module("myApp",["ui.utils"]);
+			app.controller("User",function($scope){
+				$scope.user = {}; 
+				$scope.wasSubmitted = false; 
+				$scope.submit = function() { 
+					$scope.wasSubmitted = true; 
+				};
+			});
+			app.controller("User2",function($scope){
+				$scope.user = {}; 
+				$scope.wasSubmitted = false; 
+				$scope.submit = function() { 
+					$scope.wasSubmitted = true; 
+				};
+				$scope.error = function(name) {
+					var s = $scope.form2[name];
+					return s.$invalid && s.$dirty ? "error" : "";
+				};
+			});
+			app.controller("User3", function($scope) {
+				$scope.user = {};
+				$scope.wasSubmitted = false;
+				//$scope.blacklist = [ 'idiot', 'loser' ];
+				$scope.notBlackListed = function(value) {
+					return value && value.length % 3 == 0;
+				};
+				$scope.submit = function() {
+					$scope.wasSubmitted = true;
+				};
+			});
+		</script>
+	</body>
+</html>

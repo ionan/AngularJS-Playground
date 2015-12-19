@@ -1,0 +1,244 @@
+<html>
+	<head>
+		<script src="js/angular.min.js"></script>
+		<script src="js/jasmine-all-min.js"></script>
+		<script src="js/angular-mocks.js"></script>
+		<script src="js/jquery.min.js"></script>
+	</head>
+	<body ng-app="MyApp">
+		<label><input type="checkbox" ng-model="checked"/>Toggle Button</label>
+		<button ng-disabled="checked">Press me</button>
+		<hr />
+		<my-widget>
+			<p>Hello World</p>
+		</my-widget>
+		<hr />
+		<my-second-widget></my-second-widget>
+		<hr />
+		<my-third-widget>
+			<p>This is my paragraph text.</p>
+		</my-third-widget>
+		<hr />
+		<div my-fourth-widget="Boooo!"></div>
+		<hr />
+		<my-fifth-widget text="Hello World"></my-fifth-widget>
+		<hr />
+		<my-sixth-widget fn="count = count + 1"></my-sixth-widget>
+		<hr />
+		<repeat-ntimes repeat="7"> 
+			<h1>Header 1</h1> 
+			<p>This is the paragraph.</p> 
+		</repeat-n-times>
+		<hr />
+		<basket apple orange>Roll over me and check the console!</basket>
+		<hr />
+		<tabs> 
+			<pane title="First Tab">First pane.</pane> 
+			<pane title="Second Tab">Second pane.</pane> 
+		</tabs>
+		<script>
+		var app = angular.module("MyApp", []);
+		app.directive("myWidget", function() {
+			var linkFunction = function(scope, element, attributes) {
+				var paragraph = element.children()[0];
+				$(paragraph).on("click", function() {
+					$(this).css({
+						"background-color" : "red"
+					});
+				});
+			};
+			return {
+				restrict : "E",
+				link : linkFunction
+			};
+		});
+		app.directive("mySecondWidget", function() {
+			return {
+				restrict : "E",
+				template : "<p>Hello World</p>"
+			};
+		});
+		app.directive("myThirdWidget", function() {
+			return {
+				restrict : "E",
+				transclude : true,
+				template : "<div ng-transclude><h3>Heading</h3></div>"
+			};
+		});
+		app.directive("myFourthWidget", function() {
+			var linkFunction = function(scope, element, attributes) {
+				scope.text = attributes["myFourthWidget"];
+			};
+			return {
+				restrict : "A",
+				template : "<p>{{text}}</p>",
+				link : linkFunction,
+				scope : {}
+			};
+		});
+		app.directive("myFifthWidget", function() {
+			return {
+				restrict : "E",
+				template : "<p>{{text}}</p>",
+				scope : {
+					text : "@text"
+				}
+			};
+		});
+		app.directive("mySixthWidget", function() {
+			var linkFunction = function(scope, element, attributes) {
+				scope.text = scope.fn({
+					count : 5
+				});
+			};
+			return {
+				restrict : "E",
+				template : "<p>{{text}}</p>",
+				link : linkFunction,
+				scope : {
+					fn : "&fn"
+				}
+			};
+		});
+		app.directive("repeatNtimes", function() {
+			return {
+				restrict : "E",
+				compile : function(tElement, attrs) {
+					var content = tElement.children();
+					for ( var i = 1; i < attrs.repeat; i++) {
+						tElement.append(content.clone());
+					}
+					return function(scope, element, attrs) {
+						$(element).on("click", "h1", function() {
+							$(this).css({
+								"background-color" : "red"
+							});
+						});
+					};
+				}
+			};
+		});
+		app.directive("basket", function() {
+			return {
+				restrict : "E",
+				controller : function($scope, $element, $attrs) {
+					$scope.content = [];
+					this.addApple = function() {
+						$scope.content.push("apple");
+					};
+					this.addOrange = function() {
+						$scope.content.push("orange");
+					};
+				},
+				link : function(scope, element) {
+					element.bind("mouseenter", function() {
+						console.log(scope.content);
+					});
+				}
+			};
+		});
+		app.directive("apple", function() {
+			return {
+				require : "basket",
+				link : function(scope, element, attrs, basketCtrl) {
+					basketCtrl.addApple();
+				}
+			};
+		});
+		app.directive("orange", function() {
+			return {
+				require : "basket",
+				link : function(scope, element, attrs, basketCtrl) {
+					basketCtrl.addOrange();
+				}
+			};
+		});
+		app.directive("tabs", function() {
+			return {
+				restrict : "E",
+				transclude : true,
+				scope : {},
+				controller : function($scope, $element) {
+					var panes = $scope.panes = [];
+					$scope.select = function(pane) {
+						angular.forEach(panes, function(
+								pane) {
+							pane.selected = false;
+						});
+						pane.selected = true;
+						console.log("selected pane: ",
+								pane.title);
+					};
+					this.addPane = function(pane) {
+						if (!panes.length)
+							$scope.select(pane);
+						panes.push(pane);
+					};
+				},
+				template : '<div class="tabbable">'
+						+ '<ul class="nav nav-tabs">'
+						+ '<li ng-repeat="pane in panes"' + 'ng-class="{active:pane.selected}">'
+						+ '<a href="" ng-click="select(pane)">{{pane.title}}</a>'
+						+ '</li>'
+						+ '</ul>'
+						+ '<div class="tab-content" ng-transclude></div>'
+						+ '</div>',
+				replace : true
+			};
+		});
+		app.directive("pane", function() {
+			return {
+				require : "^tabs",
+				restrict : "E",
+				transclude : true,
+				scope : {
+					title : "@"
+				},
+				link : function(scope, element, attrs,
+						tabsCtrl) {
+					tabsCtrl.addPane(scope);
+				},
+				template : '<div class="tab-pane" ng-class="{active: selected}"' + 'ng-transclude></div>',
+				replace : true
+			};
+		});
+		describe('MyApp Tabs', function() {
+			var elm, scope;
+			beforeEach(module('MyApp'));
+			beforeEach(inject(function($rootScope, $compile) {
+				elm = angular.element('<div>' + '<tabs>'
+						+ '<pane title="First Tab">'
+						+ 'First content is {{first}}' + '</pane>'
+						+ '<pane title="Second Tab">'
+						+ 'Second content is {{second}}' + '</pane>'
+						+ '</tabs>' + '</div>');
+				elm = (elm instanceof jQuery) ? elm : $(elm);
+				scope = $rootScope;
+				$compile(elm)(scope);
+				scope.$digest();
+			}));
+			it('should create clickable titles', function() {
+				console.log(elm.find('ul.nav-tabs'));
+				var titles = elm.find('ul.nav-tabs li a');
+				expect(titles.length).toBe(2);
+				expect(titles.eq(0).text()).toBe('First Tab');
+				expect(titles.eq(1).text()).toBe('Second Tab');
+			});
+			it('should set active class on title', function() {
+				var titles = elm.find('ul.nav-tabs li');
+				expect(titles.eq(0)).toHaveClass('active');
+				expect(titles.eq(1)).not.toHaveClass('active');
+			});
+			it('should change active pane when title clicked', function() {
+				var titles = elm.find('ul.nav-tabs li');
+				var contents = elm.find('div.tab-content div.tab-pane');
+				titles.eq(0).find('a').click();
+				expect(titles.eq(0)).toHaveClass('active');
+				expect(titles.eq(1)).not.toHaveClass('active');
+				expect(contents.eq(0)).toHaveClass('active');
+				expect(contents.eq(1)).not.toHaveClass('active');
+			});
+		});
+		</script>
+	</body>
+</html>

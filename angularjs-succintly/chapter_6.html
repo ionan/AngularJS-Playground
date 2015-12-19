@@ -1,0 +1,66 @@
+<html>
+	<head>
+		<script src="js/jquery.min.js"></script>
+		<script src="js/masonry.pkgd.min.js"></script>
+		<script src="js/imagesloaded.pkgd.min.js"></script>
+		<script src="js/angular.js"></script>
+		<script src="js/angular-locale_en-us.js"></script>
+		<script src="js/angular-resource.js"></script>
+		<script src="js/angular-route.js"></script>
+		<script src="js/jasmine-all-min.js"></script>
+		<script src="js/angular-mocks.js"></script>
+	</head>
+	<body ng-app="myApp">
+		<h1>Routing Example</h1> 
+		<ng-view></ng-view>
+		<hr />
+		<div ng-controller="MainCtrl">
+			<ul class="menu"> 
+				<li ng-class="menuClass('persons')">
+					<a href="#!/persons">Home</a>
+				</li> 
+				<li ng-class="menuClass('help')">
+					<a href="#!/help">Help</a>
+				</li> 
+			</ul>
+		</div>
+		<script>
+			var app = angular.module("myApp",["ngRoute", "ngResource"]);
+			app.config(function($routeProvider, $locationProvider) { 
+				$locationProvider.hashPrefix('!'); 
+				$routeProvider.when("/persons", { templateUrl: "partials/person_list.html" })
+							  .when("/persons/:id", { templateUrl: "partials/person_details.html", controller: "ShowCtrl" })
+							  .otherwise( { redirectTo: "/persons" }); 
+				});
+			app.controller("IndexCtrl",function($scope){ });
+			app.controller("MainCtrl", function($scope, $location) {
+				$scope.menuClass = function(page) { 
+					var current = $location.path().substring(1); 
+					return page === current ? "active" : ""; 
+				}; 
+			});
+			app.config(function($routeProvider, $locationProvider) { 
+				$routeProvider.when("/persons", { templateUrl: "partials/index.html" })
+							  .when("/login", { templateUrl: "partials/login.html", controller: "LoginCtrl" })
+							  .otherwise( { redirectTo: "/persons" }); 
+			}).run(function($rootScope, $location) { 
+				$rootScope.$on( "$routeChangeStart", function(event, next, current) { 
+					if ($rootScope.loggedInUser == null) { 
+						// no logged user, redirect to /login 
+						if ( next.templateUrl === "partials/login.html") { 
+							
+						} else { 
+							$location.path("/login"); 
+						} 
+					} 
+				}); 
+			});
+			app.controller("LoginCtrl", function($scope, $location, $rootScope) { 
+				$scope.login = function() { 
+					$rootScope.loggedInUser = $scope.username; 
+					$location.path("/persons"); 
+				}; 
+			});
+		</script>
+	</body>
+</html>

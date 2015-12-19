@@ -1,0 +1,505 @@
+<html>
+	<head>
+		<script src="js/jquery.min.js"></script>
+		<script src="js/masonry.pkgd.min.js"></script>
+		<script src="js/imagesloaded.pkgd.min.js"></script>
+		<script src="js/angular.js"></script>
+		<script src="js/ui-utils.js"></script>
+		<script src="js/ui-bootstrap.js"></script>
+		<script src="js/angular-locale_en-us.js"></script>
+		<script src="js/angular-resource.js"></script>
+		<script src="js/angular-route.js"></script>
+		<script src="js/jasmine-all-min.js"></script>
+		<script src="js/angular-mocks.js"></script>
+		<link rel="stylesheet" href="css/bootstrap.css">
+	</head>
+	<body ng-app="myApp">
+		<style>
+			.masonry-item {
+				display:inline;
+			}
+		</style>
+		<div ng-controller="MyCtrl">
+			<form class="form-inline">
+				<input ng-model="query" type="text" placeholder="Filter by" autofocus>
+			</form>
+			<ul ng-repeat="friend in friends | filter:query | orderBy: 'name' ">
+				<li>{{friend.name}}</li>
+			</ul>
+			<hr />
+			<ul ng-repeat="friend in friends | filter: { name: query, age: '20' } | orderBy: 'name' ">
+				<li>{{friend.name}} ({{friend.age}})</li>
+			</ul>
+			<hr />
+			<ul ng-repeat="friend in friends | filter: filterFunction | orderBy: 'name' ">
+				<li>{{friend.name}} ({{friend.age}})</li>
+			</ul>
+		</div>
+		<hr />
+		<div ng-controller="PaginationCtrl">
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th>Id</th>
+						<th>Name</th>
+						<th>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="item in items | offset: currentPage*itemsPerPage | limitTo: itemsPerPage">
+						<td>{{item.id}}</td>
+						<td>{{item.name}}</td>
+						<td>{{item.description}}</td>
+					</tr>
+				</tbody>
+				<tfoot>
+					<td colspan="3">
+						<div class="pagination">
+							<ul>
+								<li ng-class="prevPageDisabled()"><a href
+									ng-click="prevPage()">« Prev</a></li>
+								<li ng-repeat="n in range()"
+									ng-class="{active: n == currentPage}" ng-click="setPage(n)">
+									<a href="#">{{n+1}}</a>
+								</li>
+								<li ng-class="nextPageDisabled()"><a href
+									ng-click="nextPage()">Next »</a></li>
+							</ul>
+						</div>
+					</td>
+				</tfoot>
+			</table>
+		</div>
+		<hr />
+		<div ng-controller="PaginationCtrl2">
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th>Id</th>
+						<th>Name</th>
+						<th>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="item in pagedItems">
+						<td>{{item.id}}</td>
+						<td>{{item.name}}</td>
+						<td>{{item.description}}</td>
+					</tr>
+				</tbody>
+				<tfoot>
+					<td colspan="3">
+						<div class="pagination">
+							<ul>
+								<li ng-class="prevPageDisabled()"><a href
+									ng-click="prevPage()">« Prev</a></li>
+								<li ng-repeat="n in range()"
+									ng-class="{active: n == currentPage}" ng-click="setPage(n)">
+									<a href="#">{{n+1}}</a>
+								</li>
+								<li ng-class="nextPageDisabled()"><a href
+									ng-click="nextPage()">Next »</a></li>
+							</ul>
+						</div>
+					</td>
+				</tfoot>
+			</table>
+		</div>
+		<hr />
+		<div ng-controller="PaginationCtrl3">
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th>Id</th>
+						<th>Name</th>
+						<th>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="item in pagedItems">
+						<td>{{item.id}}</td>
+						<td>{{item.name}}</td>
+						<td><input type="text" value="{{item.description}}"></td>
+					</tr>
+				</tbody>
+				<tfoot>
+					<td colspan="3">
+						<button class="btn" href="#" ng-class="nextPageDisabledClass()"
+							ng-click="loadMore()">Load More</button>
+					</td>
+				</tfoot>
+			</table>
+		</div>
+		<hr />
+		<div ng-controller="MyCtrl">
+			<ul class="nav nav-pills">
+				<li><a href="#/">Home</a></li>
+				<li><a href="#/page">Next Page</a></li>
+			</ul>
+			<div class="alert" ng-show="flash.getMessage()">
+				<b>Alert!</b>
+				<p>{{flash.getMessage()}}</p>
+			</div>
+			<ng-view></ng-view>
+			<script type="text/ng-template" id="home.html"> <h3>Home</h3> <form ng-submit="submit(message)" class="form-inline"> <input type="text" ng-model="message" autofocus> <button class="btn">Submit</button> </form> </script>
+			<script type="text/ng-template" id="page.html"> <h3>Next Page</h3> </script>
+		</div>
+		<hr />
+		<div contenteditable ng-model="textEdit" style="height:50px; width: 500px;">Fooo</div> 
+		<p>{{textEdit}}</p>
+		<hr />
+		<div ng-controller="ModalDemoCtrl">
+		    <script type="text/ng-template" id="myModalContent.html">
+        		<div class="modal-header">
+            		<h3 class="modal-title">I'm a modal!</h3>
+        		</div>
+        		<div class="modal-body">
+            		<ul>
+                		<li ng-repeat="item in items">
+                    		<a ng-click="selected.item = item">{{ item }}</a>
+                		</li>
+            		</ul>
+            		Selected: <b>{{ selected.item }}</b>
+        		</div>
+        		<div class="modal-footer">
+            		<button class="btn btn-primary" ng-click="ok()">OK</button>
+            		<button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+       			</div>
+    		</script>
+		    <button class="btn btn-default" ng-click="open()">Open me!</button>
+		    <button class="btn btn-default" ng-click="open('lg')">Large modal</button>
+		    <button class="btn btn-default" ng-click="open('sm')">Small modal</button>
+		    <div ng-show="selected">Selection from a modal: {{ selected }}</div>
+		</div>
+		<hr />
+		<div style="height:400px">
+			<div class="masonry: 240;" ng-controller="MasonryCtrl" style="height:300px">
+				<div>
+					<input type="text" ng-model="searchTermFlickr" placeholder="Search term">
+					<button ng-click="search()">Search photos</button>
+					<button ng-click="reset()">Reset</button>
+					<img id="spinner" ng-src="img/spinner.gif" style="display: none;">
+				</div>
+				<div style="clear:both"></div>
+			    <div class="masonry-item" ng-repeat="item in photos.items">
+			        <img ng-src="{{ item.media.m }}" title="{{ item.title }} by {{ item.author }}" />
+			    </div>
+			</div>
+		</div>
+		<script>	
+			var app = angular.module("myApp",["ngRoute", "ui.bootstrap", "ngResource"]);
+			app.controller("MyCtrl", function($scope) {
+				$scope.filterFunction = function(element) {
+					return element.name.match(/^Ma/) ? true : false;
+				};
+				$scope.friends = [ {
+					name : "Peter",
+					age : 20
+				}, {
+					name : "Pablo",
+					age : 55
+				}, {
+					name : "Linda",
+					age : 20
+				}, {
+					name : "Marta",
+					age : 37
+				}, {
+					name : "Othello",
+					age : 20
+				}, {
+					name : "Markus",
+					age : 32
+				} ];
+			});
+			app.filter('offset', function() {
+				return function(input, start) {
+					start = parseInt(start, 10);
+					return input.slice(start);
+				};
+			});
+			app.controller("PaginationCtrl", function($scope) {
+				$scope.itemsPerPage = 5;
+				$scope.currentPage = 0;
+				$scope.items = [];
+				for ( var i = 0; i < 50; i++) {
+					$scope.items.push({
+						id : i,
+						name : "name " + i,
+						description : "description " + i
+					});
+				}
+				$scope.prevPage = function() {
+					if ($scope.currentPage > 0) {
+						$scope.currentPage--;
+					}
+				};
+				$scope.prevPageDisabled = function() {
+					return $scope.currentPage === 0 ? "disabled"
+							: "";
+				};
+				$scope.pageCount = function() {
+					return Math.ceil($scope.items.length
+							/ $scope.itemsPerPage) - 1;
+				};
+				$scope.nextPage = function() {
+					if ($scope.currentPage < $scope.pageCount()) {
+						$scope.currentPage++;
+					}
+				};
+				$scope.nextPageDisabled = function() {
+					return $scope.currentPage === $scope
+							.pageCount() ? "disabled" : "";
+				};
+			});
+			app.factory("Item", function() {
+				var items = [];
+				for ( var i = 0; i < 50; i++) {
+					items.push({
+						id : i,
+						name : "name " + i,
+						description : "description " + i
+					});
+				}
+				return {
+					get : function(offset, limit) {
+						return items.slice(offset, offset + limit);
+					},
+					total : function() {
+						return items.length;
+					}
+				};
+			});
+			app.controller("PaginationCtrl2", function($scope, Item) {
+				$scope.itemsPerPage = 5;
+				$scope.currentPage = 0;
+				$scope.prevPage = function() {
+					if ($scope.currentPage > 0) {
+						$scope.currentPage--;
+					}
+				};
+				$scope.prevPageDisabled = function() {
+					return $scope.currentPage === 0 ? "disabled"
+							: "";
+				};
+				$scope.nextPage = function() {
+					if ($scope.currentPage < $scope.pageCount() - 1) {
+						$scope.currentPage++;
+					}
+				};
+				$scope.nextPageDisabled = function() {
+					return $scope.currentPage === $scope
+							.pageCount() - 1 ? "disabled" : "";
+				};
+				$scope.pageCount = function() {
+					return Math.ceil($scope.total
+							/ $scope.itemsPerPage);
+				};
+				$scope.$watch("currentPage", function(newValue,
+						oldValue) {
+					$scope.pagedItems = Item.get(newValue
+							* $scope.itemsPerPage,
+							$scope.itemsPerPage);
+					$scope.total = Item.total();
+				});
+			});
+			app.controller("PaginationCtrl3", function($scope, Item) {
+				$scope.itemsPerPage = 5;
+				$scope.currentPage = 0;
+				$scope.total = Item.total();
+				$scope.pagedItems = Item.get($scope.currentPage
+						* $scope.itemsPerPage,
+						$scope.itemsPerPage);
+				$scope.loadMore = function() {
+					$scope.currentPage++;
+					var newItems = Item.get($scope.currentPage
+							* $scope.itemsPerPage,
+							$scope.itemsPerPage);
+					$scope.pagedItems = $scope.pagedItems
+							.concat(newItems);
+				};
+				$scope.nextPageDisabledClass = function() {
+					return $scope.currentPage === $scope
+							.pageCount() - 1 ? "disabled" : "";
+				};
+				$scope.pageCount = function() {
+					return Math.ceil($scope.total
+							/ $scope.itemsPerPage);
+				};
+			});
+			app.config(function($routeProvider) {
+				$routeProvider.when("/home", {
+					templateUrl : "home.html"
+				}).when("/page", {
+					templateUrl : "page.html"
+				}).otherwise({
+					redirectTo : "/home"
+				});
+			});
+			app.factory("flash", function($rootScope) {
+				var queue = [];
+				var currentMessage = "";
+				$rootScope.$on("$routeChangeSuccess", function() {
+					currentMessage = queue.shift() || "";
+				});
+				return {
+					setMessage : function(message) {
+						queue.push(message);
+					},
+					getMessage : function() {
+						return currentMessage;
+					}
+				};
+			});
+			app.controller("MyCtrl", function($scope, $location, flash) {
+				$scope.flash = flash;
+				$scope.message = "Hello World";
+				$scope.submit = function(message) {
+					flash.setMessage(message);
+					$location.path("/page");
+				}
+			});
+			app.directive("contenteditable", function() {
+				return {
+					restrict : "A",
+					require : "ngModel",
+					link : function(scope, element, attrs, ngModel) {
+						function read() {
+							ngModel.$setViewValue(element.html());
+						}
+						ngModel.$render = function() {
+							element.html(ngModel.$viewValue || "");
+						};
+						element.bind("blur keyup change", function() {
+							scope.$apply(read);
+						});
+					}
+				};
+			});
+			app.controller('ModalDemoCtrl', function($scope, $modal, $log) {
+				$scope.items = [ 'item1', 'item2', 'item3' ];
+				$scope.open = function(size) {
+					var modalInstance = $modal.open({
+						templateUrl : 'myModalContent.html',
+						controller : 'ModalInstanceCtrl',
+						size : size,
+						resolve : {
+							items : function() {
+								return $scope.items;
+							}
+						}
+					});
+					modalInstance.result.then(function(selectedItem) {
+						$scope.selected = selectedItem;
+					}, function() {
+						$log.info('Modal dismissed at: ' + new Date());
+					});
+				};
+			});
+			app.controller('ModalInstanceCtrl', function($scope, $modalInstance, items) {
+				$scope.items = items;
+				$scope.selected = {
+					item : $scope.items[0]
+				};
+				$scope.ok = function() {
+					$modalInstance.close($scope.selected.item);
+				};
+				$scope.cancel = function() {
+					$modalInstance.dismiss('cancel');
+				};
+			});
+
+			// Flick test
+			app.factory('customInterceptor', ['$q', '$rootScope', '$location',
+                function ($q, $rootScope, $location) {
+                    return {
+                        request: function (config) {
+                        	console.log("[Request]");
+                        	$("#spinner").show();
+                            return config || $q.when(config);
+                        },
+                        requestError: function(request){
+                        	console.log("[requestError]");
+                        	$("#spinner").hide();
+                            return $q.reject(request);
+                        },
+                        response: function (response) {
+                        	console.log("[response]");
+                        	$("#spinner").hide();
+                            return response || $q.when(response);
+                        },
+                        responseError: function (response) {
+                        	console.log("[responseError]");
+                        	$("#spinner").hide();
+                            if (response && response.status === 404) {
+                            }
+                            if (response && response.status >= 500) {
+                            }
+                            return $q.reject(response);
+                        }
+                    };
+            }]);
+            app.config(['$httpProvider', function ($httpProvider) {
+                $httpProvider.interceptors.push('customInterceptor');    
+            }]);
+			app.factory('flickrPhotos', function($resource) {
+				return $resource(
+						'http://api.flickr.com/services/feeds/photos_public.gne',
+						{
+							format : 'json',
+							jsoncallback : 'JSON_CALLBACK'
+						}, {
+							'load' : {
+								'method' : 'JSONP',
+								interceptor: {
+									request: function (data) {
+					                    console.log('request in interceptor', data);
+					                },
+					                requestError: function (data) {
+					                    console.log('requestError in interceptor', data);
+					                },
+					                response: function (data) {
+					                    console.log('response in interceptor', data);
+					                },
+					                responseError: function (data) {
+					                    console.log('error in interceptor', data);
+					                }
+					            }
+							}
+						});
+			});
+			app.directive('masonry', function($parse) {
+				return {
+					restrict : 'AC',
+					link : function(scope, elem, attrs) {
+						elem.masonry({
+							itemSelector : '.masonry-item',
+							columnWidth : $parse(attrs.masonry)(scope)
+						});
+					}
+				};
+			});
+			app.directive('masonryItem', function() {
+				return {
+					restrict : 'AC',
+					link : function(scope, elem, attrs) {
+						elem.imagesLoaded(function() {
+							elem.parents('.masonry').masonry('reload');
+						});
+					}
+				};
+			});
+			app.controller('MasonryCtrl', function($scope, flickrPhotos) {
+				$scope.search = function() {
+					$scope.photos = flickrPhotos.load({
+						tags : $scope.searchTermFlickr
+					});
+				};
+				$scope.reset = function(){
+					$scope.photos = [];
+					$scope.searchTermFlickr = "";
+				};
+			});
+		</script>
+	</body>
+</html>

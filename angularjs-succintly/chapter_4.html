@@ -1,0 +1,97 @@
+<html>
+	<head>
+		<script src="js/angular.min.js"></script>
+		<script src="js/angular-locale_en-us.js"></script>
+		<script src="js/jasmine-all-min.js"></script>
+		<script src="js/angular-mocks.js"></script>
+		<script src="js/jquery.min.js"></script>
+	</head>
+	<body ng-app="myApp">
+		<input type="text" ng-model="amount" placeholder="Enter amount"/> 
+		<p>Default Currency: {{ amount | currency }}</p> 
+		<p>Custom Currency: {{ amount | currency: "Euro " }}</p>
+		<hr />
+		<input type="text" ng-model="text" placeholder="Enter text"/> 
+		<p>Input: {{ text }}</p>
+		<p>Filtered input: {{ text | reverse }}</p>
+		<p>Filtered input (2): {{ text | vocals }}</p>
+		<hr />
+		<input type="text" ng-model="text2" placeholder="Enter text"/> 
+		<p>Input: {{ text2 }}</p> 
+		<p>Filtered input: {{ text2 | reverse2: { suffix: "!", prefix: "¡"} }}</p>
+		<hr />
+		<ul ng-init="names = ['Peter', 'Anton', 'John', 'Bradley', 'Michael']"> 
+			<li ng-repeat="name in names | exclude:'Peter' | sortAscending"> 
+				<span>{{name}}</span> 
+			</li> 
+		</ul>
+		<hr />
+		<p>{{ data | checkmark}}</p> 
+		<p>{{ !data | checkmark}}</p>
+		<script>
+			var app = angular.module("myApp",[]);
+			app.filter("reverse", function() {
+				return function(input) {
+					var result = "";
+					input = input || "";
+					for ( var i = 0; i < input.length; i++) {
+						result = input.charAt(i) + result;
+					}
+					return result;
+				};
+			});
+			app.filter("vocals", function() {
+				return function(input) {
+					input = input || "";
+					return input.replace(/[^aeiouAEIOU ]/g,"");
+				};
+			});
+			app.filter("reverse2", function() {
+				return function(input, options) {
+					input = input || "";
+					var result = "";
+					var suffix = options["suffix"] || "";
+					var prefix = options["prefix"] || "";
+					for ( var i = 0; i < input.length; i++) {
+						result = input.charAt(i) + result;
+					}
+					if (input.length > 0){
+						result += suffix;
+						result = prefix + result;
+					}
+					return result;
+				};
+			});
+			app.filter("exclude", function() {
+				return function(input, exclude) {
+					var result = [];
+					for ( var i = 0; i < input.length; i++) {
+						if (input[i] !== exclude) {
+							result.push(input[i]);
+						}
+					}
+					return result;
+				};
+			});
+			app.filter("sortAscending", function() {
+				return function(input) {
+					return input.sort();
+				};
+			});
+			app.filter('checkmark', function() {
+				return function(input) {
+					return input ? '\u2713' : '\u2718';
+				};
+			});
+			describe('myApp checkmarks', function() {
+				beforeEach(module('myApp'));
+				describe('checkmark', function() {
+					it('should convert boolean values to unicode checkmark or cross', inject(function(checkmarkFilter) {
+						expect(checkmarkFilter(true)).toBe('\u2713');
+						expect(checkmarkFilter(false)).toBe('\u2718');
+					}));
+				});
+			});
+		</script>
+	</body>
+</html>
